@@ -337,122 +337,96 @@ class TransferFragment : Fragment() {
     /*     * TRANSFER VALIDATION     */
     private fun onSubmitTransfer() {
 
-        /*
-         * Clear previous validation errors.
-         */
+        // Clear previous validation errors.
         binding.etRecipientAccount.error = null
         binding.etRecipientName.error = null
         binding.etAmount.error = null
 
+        // Read entered values.
+        val account = binding.etRecipientAccount
+            .text
+            .toString()
+            .trim()
+
+        val name = binding.etRecipientName
+            .text
+            .toString()
+            .trim()
+
+        val amountText = binding.etAmount
+            .text
+            .toString()
+            .trim()
+
+        val remarks = binding.etRemarks
+            .text
+            .toString()
+            .trim()
 
         /*
-         * Read entered values.
+         * Basic validation is kept in the pure Kotlin
+         * TransferValidator so it can be unit tested
+         * without Android dependencies.
          */
-        val account =
-            binding.etRecipientAccount
-                .text
-                .toString()
-                .trim()
+        val error = TransferValidator.validate(
+            account = account,
+            name = name,
+            amountText = amountText
+        )
 
-        val name =
-            binding.etRecipientName
-                .text
-                .toString()
-                .trim()
+        if (error != null) {
 
-        val amountText =
-            binding.etAmount
-                .text
-                .toString()
-                .trim()
+            when {
+                account.isBlank() -> {
+                    binding.etRecipientAccount.error = error
+                    binding.etRecipientAccount.requestFocus()
+                }
 
-        val remarks =
-            binding.etRemarks
-                .text
-                .toString()
-                .trim()
+                name.isBlank() -> {
+                    binding.etRecipientName.error = error
+                    binding.etRecipientName.requestFocus()
+                }
 
-
-        /*         * Recipient Account Validation         */
-        if (
-            account.isEmpty()
-        ) {
-
-            binding.etRecipientAccount.error =
-                "Enter a recipient account number"
-
-            binding.etRecipientAccount
-                .requestFocus()
+                else -> {
+                    binding.etAmount.error = error
+                    binding.etAmount.requestFocus()
+                }
+            }
 
             return
         }
 
-        /*         * Recipient Name Validation         */
-        if (
-            name.isEmpty()
-        ) {
+        /*
+         * TransferValidator has already confirmed that
+         * amountText contains a valid positive number.
+         */
+        val amount = amountText.toDouble()
 
-            binding.etRecipientName.error =
-                "Enter a recipient name"
-
-            binding.etRecipientName
-                .requestFocus()
-
-            return
-        }
-
-        /*         * Amount Validation         */
-
-        val amount =
-            amountText.toDoubleOrNull()
-
-
-        if (
-            amount == null ||
-            amount <= 0.0
-        ) {
-
-            binding.etAmount.error =
-                "Enter a valid amount greater than 0"
-
-            binding.etAmount
-                .requestFocus()
-
-            return
-        }
-
-        /*         * Maximum Transfer Limit         */
-        if (
-            amount > MAX_TRANSFER_AMOUNT
-        ) {
+        /*
+         * Existing Meridian business rule:
+         * maximum transfer amount is LKR 500,000.
+         */
+        if (amount > MAX_TRANSFER_AMOUNT) {
 
             binding.etAmount.error =
                 "Maximum transfer amount is LKR 500,000"
 
-            binding.etAmount
-                .requestFocus()
+            binding.etAmount.requestFocus()
 
             return
         }
 
+        // Create the transfer request.
+        val request = TransferRequest(
+            recipientAccount = account,
+            recipientName = name,
+            amount = amount,
+            remarks = remarks
+        )
 
-        /*         * Create TransferRequest         */
-
-        val request =
-            TransferRequest(
-                recipientAccount = account,
-                recipientName = name,
-                amount = amount,
-                remarks = remarks
-            )
-
-        /*
-         * Navigate to ConfirmationFragment.
-         */
+        // Navigate to the confirmation screen.
         (requireActivity() as MainActivity)
-            .showConfirmationFragment(
-                request
-            )
+            .showConfirmationFragment(request)
     }
 
     /*     * CLEAN UP VIEW BINDING     */
