@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <style
+        name="Theme.Meridian"
+        parent="Theme.MaterialComponents.DayNight.NoActionBar">
+
+        <item name="colorPrimary">@color/navy</item>
+
+        <item name="colorPrimaryVariant">@color/navy_dark</item>
+
+        <item name="colorSecondary">@color/accent_blue</item>
+
+        <item name="android:windowBackground">@color/screen_bg</item>
+
+        <item name="android:navigationBarColor">@color/screen_bg</item>
+
+        <item name="android:statusBarColor">@color/navy</item>
+
+        <item name="android:windowLightStatusBar">false</item>
+
+        <item name="android:windowLightNavigationBar">false</item>
+
+    </style>
+
+</resources>

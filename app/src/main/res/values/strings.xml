@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Meridian</string>
+    <string name="tagline">Banking that moves first</string>
+    <string name="secured_footer">Secured · FDIC insured</string>
+
+    <string name="welcome_back">Welcome back</string>
+    <string name="login_subtitle">Sign in to Meridian to move money securely.</string>
+    <string name="hint_username">Enter username</string>
+    <string name="hint_password">Enter password</string>
+    <string name="btn_login">Login</string>
+    <string name="forgot_password">Forgot password?</string>
+
+    <string name="greeting_prefix">Good morning</string>
+    <string name="user_name">Yasith Prashan</string>
+    <string name="account_label">Everyday Checking · ····4821</string>
+    <string name="balance_amount">$12,480.65</string>
+    <string name="balance_trend">+2.4% vs last month</string>
+    <string name="action_transfer">Transfer</string>
+    <string name="action_pay_bills">Pay Bills</string>
+    <string name="action_recharge">Recharge</string>
+    <string name="action_history">History</string>
+    <string name="recent_activity">Recent activity</string>
+    <string name="see_all">See all</string>
+
+    <string name="transfer_title">Transfer funds</string>
+    <string name="label_from_account">From account</string>
+    <string name="label_recipient_account">Recipient account</string>
+    <string name="hint_account_number">Account number</string>
+    <string name="recipient_hint_name">Amara Okafor · Meridian Bank</string>
+    <string name="label_amount">Amount</string>
+    <string name="fee_hint">Fee $1.50 · Arrives instantly</string>
+    <string name="send_max">Send max</string>
+    <string name="label_note">Note (optional)</string>
+    <string name="hint_note">Add a note</string>
+    <string name="btn_continue">Continue</string>
+    <string name="back">Back</string>
+    <string name="account_icon">Account icon</string>
+    <string name="select_account">Select account</string>
+
+    <string name="sample_account_summary">Everyday Checking&#10;····4821 · $12,480.65</string>
+
+    <string name="label_recipient_name">Recipient name</string>
+    <string name="hint_recipient_name">Enter recipient name</string>
+
+    <string name="hint_amount">$0.00</string>
+
+    <string name="btn_review_transfer">Review Transfer</string>
+    <string name="btn_cancel">Cancel</string>
+
+    <string name="confirmation_title">Review transfer</string>
+    <string name="confirmation_subtitle">Check every detail before you send. Transfers can\'t be reversed once confirmed.</string>
+    <string name="label_from">From</string>
+    <string name="label_to">To</string>
+    <string name="label_fee">Fee</string>
+    <string name="label_total_debit">Total debit</string>
+    <string name="verified_note">Verified recipient · Instant settlement</string>
+    <string name="btn_confirm_transfer">Confirm Transfer</string>
+
+    <string name="success_title">Transaction Successful</string>
+    <string name="label_reference">Reference number</string>
+    <string name="label_updated_balance">Updated balance</string>
+    <string name="btn_done">Done</string>
+    <string name="share_receipt">Share receipt</string>
+
+    <string name="error_title">Transaction Failed</string>
+    <string name="error_subtitle">The recipient bank declined the transfer. No money has left your account.</string>
+    <string name="label_error_code">Error code</string>
+    <string name="btn_retry">Retry</string>
+    <string name="btn_contact_support">Contact Support</string>
+
+    <string name="support_title">Contact Support</string>
+    <string name="support_heading">How would you like to reach us?</string>
+    <string name="support_reference_label">Reference for this issue</string>
+    <string name="support_call">Call Support</string>
+    <string name="support_call_sub">Available 24/7</string>
+    <string name="support_chat">Live Chat</string>
+    <string name="support_chat_sub">Chat with an agent now</string>
+    <string name="support_email">Email Us</string>
+    <string name="support_email_sub">support@meridian.com · Reply in 4h</string>
+    <string name="btn_back_to_home">Back to Home</string>
+    <string name="support_extra_note">Your transfer of $1,250.00 was declined by the recipient bank. No funds left your account — our team can resolve it with you.</string>
+
+    <!-- confirm -->
+    <string name="dialog_confirm_title">Confirm Transfer</string>
+    <string name="dialog_confirm_subtitle">Review the transfer details before confirming.</string>
+
+    <string name="dialog_recipient">RECIPIENT</string>
+    <string name="dialog_amount">AMOUNT</string>
+    <string name="dialog_remarks">REMARKS</string>
+
+    <string name="dialog_edit">Edit</string>
+    <string name="dialog_confirm">Confirm</string>
+    <string name="transfer_submitted">Transfer submitted</string>
+</resources>
