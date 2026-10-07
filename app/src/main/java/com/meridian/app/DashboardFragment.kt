@@ -1,7 +1,6 @@
 package com.meridian.app
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -11,28 +10,28 @@ import android.view.View
 import android.view.ViewGroup
 
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-
-import com.google.android.material.switchmaterial.SwitchMaterial
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 class DashboardFragment : Fragment() {
 
-    companion object {
-
-        private const val PREFS_NAME =
-            "banking_app_prefs"
-
-        private const val KEY_DARK_MODE =
-            "dark_mode_enabled"
-    }
+    /*
+     * DashboardViewModel owns the state used by
+     * the Compose dashboard screen.
+     */
+    private val viewModel: DashboardViewModel by viewModels()
 
     /*
      * Android 13+ notification permission launcher.
      *
-     * If the user grants permission, start the
-     * SessionReminderService.
+     * If permission is granted, the existing
+     * SessionReminderService is started.
      */
     private val notificationPermissionLauncher =
         registerForActivityResult(
@@ -50,11 +49,57 @@ class DashboardFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        return inflater.inflate(
-            R.layout.fragment_dashboard,
-            container,
-            false
-        )
+        /*
+         * Lab 09:
+         * The Dashboard no longer inflates
+         * fragment_dashboard.xml.
+         *
+         * ComposeView is used instead.
+         */
+        return ComposeView(requireContext()).apply {
+
+            /*
+             * Dispose the Compose composition when
+             * the Fragment's view lifecycle is destroyed.
+             */
+            setViewCompositionStrategy(
+                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+            )
+
+            setContent {
+
+                /*
+                 * Observe StateFlow in a lifecycle-aware way.
+                 */
+                val uiState by viewModel.uiState
+                    .collectAsStateWithLifecycle()
+
+                MaterialTheme {
+
+                    DashboardScreen(
+                        uiState = uiState,
+
+                        /*
+                         * Existing Transfer navigation
+                         * is preserved using a callback.
+                         */
+                        onTransferClick = {
+                            (requireActivity() as MainActivity)
+                                .showTransferFragment()
+                        },
+
+                        /*
+                         * Existing History navigation
+                         * is preserved using a callback.
+                         */
+                        onHistoryClick = {
+                            (requireActivity() as MainActivity)
+                                .showHistoryFragment()
+                        }
+                    )
+                }
+            }
+        }
     }
 
     override fun onViewCreated(
@@ -69,59 +114,15 @@ class DashboardFragment : Fragment() {
 
         /*
          * ------------------------------------------
-         * LAB 05
-         * Fragment Navigation
-         * ------------------------------------------
-         */
-
-        // Transfer quick action
-        view.findViewById<View>(
-            R.id.btnGoToTransfer
-        ).setOnClickListener {
-
-            (requireActivity() as MainActivity)
-                .showTransferFragment()
-        }
-
-        // History quick action
-        view.findViewById<View>(
-            R.id.btnGoToHistory
-        ).setOnClickListener {
-
-            (requireActivity() as MainActivity)
-                .showHistoryFragment()
-        }
-
-        // "See all" also opens History
-        view.findViewById<View?>(
-            R.id.btnSeeAllHistory
-        )?.setOnClickListener {
-
-            (requireActivity() as MainActivity)
-                .showHistoryFragment()
-        }
-
-
-        /*
-         * ------------------------------------------
          * LAB 06
          * Session Reminder Service
          * ------------------------------------------
+         *
+         * This functionality is preserved after
+         * migrating the Dashboard to Compose.
          */
-
         setupSessionReminder()
-
-
-        /*
-         * ------------------------------------------
-         * LAB 06 OPTIONAL CHALLENGE
-         * Dark Mode SharedPreferences
-         * ------------------------------------------
-         */
-
-        setupDarkMode(view)
     }
-
 
     /*
      * =========================================================
@@ -156,7 +157,7 @@ class DashboardFragment : Fragment() {
             } else {
 
                 /*
-                 * Ask the user for permission.
+                 * Ask the user for notification permission.
                  */
                 notificationPermissionLauncher.launch(
                     Manifest.permission.POST_NOTIFICATIONS
@@ -173,12 +174,11 @@ class DashboardFragment : Fragment() {
         }
     }
 
-
     /*
-     * Start the LifecycleService.
+     * Start the existing SessionReminderService.
      *
-     * The service waits 30 seconds and then
-     * posts the session reminder notification.
+     * The service waits and posts the
+     * session reminder notification.
      */
     private fun startSessionReminder() {
 
@@ -191,84 +191,5 @@ class DashboardFragment : Fragment() {
         requireContext().startService(
             serviceIntent
         )
-    }
-
-
-    /*
-     * =========================================================
-     * DARK MODE
-     * =========================================================
-     */
-
-    private fun setupDarkMode(
-        view: View
-    ) {
-
-        val prefs =
-            requireContext()
-                .getSharedPreferences(
-                    PREFS_NAME,
-                    Context.MODE_PRIVATE
-                )
-
-        val darkModeSwitch =
-            view.findViewById<SwitchMaterial>(
-                R.id.switchDarkMode
-            )
-
-        /*
-         * Get previously saved preference.
-         */
-        val darkModeEnabled =
-            prefs.getBoolean(
-                KEY_DARK_MODE,
-                false
-            )
-
-        /*
-         * Display the saved state in the switch.
-         */
-        darkModeSwitch.isChecked =
-            darkModeEnabled
-
-
-        /*
-         * Save and apply the theme whenever
-         * the switch changes.
-         */
-        darkModeSwitch
-            .setOnCheckedChangeListener {
-                    _,
-                    isChecked ->
-
-                /*
-                 * Save preference.
-                 */
-                prefs.edit()
-                    .putBoolean(
-                        KEY_DARK_MODE,
-                        isChecked
-                    )
-                    .apply()
-
-
-                /*
-                 * Apply theme.
-                 */
-                if (isChecked) {
-
-                    AppCompatDelegate
-                        .setDefaultNightMode(
-                            AppCompatDelegate.MODE_NIGHT_YES
-                        )
-
-                } else {
-
-                    AppCompatDelegate
-                        .setDefaultNightMode(
-                            AppCompatDelegate.MODE_NIGHT_NO
-                        )
-                }
-            }
     }
 }
