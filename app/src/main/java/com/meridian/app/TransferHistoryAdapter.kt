@@ -1,3 +1,4 @@
+
 package com.meridian.app
 
 import android.view.LayoutInflater
@@ -8,29 +9,21 @@ import androidx.recyclerview.widget.RecyclerView
 import java.util.Locale
 
 class TransferHistoryAdapter(
-    private val items: List<TransferRequest>
-) : RecyclerView.Adapter<
-        TransferHistoryAdapter.ViewHolder
-        >() {
+    private val items: MutableList<FirestoreTransfer> = mutableListOf()
+) : RecyclerView.Adapter<TransferHistoryAdapter.ViewHolder>() {
 
     class ViewHolder(
         view: View
     ) : RecyclerView.ViewHolder(view) {
 
         val name: TextView =
-            view.findViewById(
-                R.id.tvHistoryName
-            )
+            view.findViewById(R.id.tvHistoryName)
 
         val amount: TextView =
-            view.findViewById(
-                R.id.tvHistoryAmount
-            )
+            view.findViewById(R.id.tvHistoryAmount)
 
         val remarks: TextView =
-            view.findViewById(
-                R.id.tvHistoryRemarks
-            )
+            view.findViewById(R.id.tvHistoryRemarks)
     }
 
     override fun onCreateViewHolder(
@@ -38,14 +31,13 @@ class TransferHistoryAdapter(
         viewType: Int
     ): ViewHolder {
 
-        val view =
-            LayoutInflater
-                .from(parent.context)
-                .inflate(
-                    R.layout.item_transfer_history,
-                    parent,
-                    false
-                )
+        val view = LayoutInflater
+            .from(parent.context)
+            .inflate(
+                R.layout.item_transfer_history,
+                parent,
+                false
+            )
 
         return ViewHolder(view)
     }
@@ -58,22 +50,25 @@ class TransferHistoryAdapter(
         val item = items[position]
 
         holder.name.text =
-            "${item.recipientName} " +
-                    "(${item.recipientAccount})"
+            "${item.recipientName} (${item.recipientAccount})"
 
-        holder.amount.text =
-            String.format(
-                Locale.US,
-                "LKR %,.2f",
-                item.amount
-            )
+        holder.amount.text = String.format(
+            Locale.US,
+            "LKR %,.2f",
+            item.amount
+        )
 
         holder.remarks.text =
-            item.remarks.ifEmpty {
-                "No remarks"
-            }
+            item.remarks.ifEmpty { "No remarks" }
     }
 
-    override fun getItemCount(): Int =
-        items.size
+    override fun getItemCount(): Int = items.size
+
+    fun updateTransfers(
+        transfers: List<FirestoreTransfer>
+    ) {
+        items.clear()
+        items.addAll(transfers)
+        notifyDataSetChanged()
+    }
 }

@@ -1,10 +1,13 @@
+
 package com.meridian.app
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.FragmentManager
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
 
@@ -13,24 +16,25 @@ class MainActivity : AppCompatActivity() {
         private const val KEY_DARK_MODE = "dark_mode_enabled"
     }
 
+    private val firebaseAuth: FirebaseAuth by lazy {
+        FirebaseAuth.getInstance()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        /*
-         * Lab 06 Optional Challenge:
-         * Restore the saved theme before the Activity UI is created.
-         */
         applySavedTheme()
 
         super.onCreate(savedInstanceState)
 
+        // Prevent opening Dashboard without a Firebase session.
+        if (firebaseAuth.currentUser == null) {
+            openLoginActivity()
+            return
+        }
+
         setContentView(R.layout.activity_main)
 
-        /*
-         * Show DashboardFragment only when MainActivity
-         * is first created.
-         */
         if (savedInstanceState == null) {
-
             supportFragmentManager
                 .beginTransaction()
                 .setReorderingAllowed(true)
@@ -42,9 +46,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // =========================================================
-    // THEME
-    // =========================================================
+    override fun onStart() {
+        super.onStart()
+
+        // Check the session whenever MainActivity becomes visible.
+        if (firebaseAuth.currentUser == null) {
+            openLoginActivity()
+        }
+    }
 
     private fun applySavedTheme() {
 
@@ -67,16 +76,8 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    // =========================================================
-    // DASHBOARD NAVIGATION
-    // =========================================================
-
     fun showDashboardFragment() {
 
-        /*
-         * Clear Transfer / Confirmation / History
-         * entries from the back stack when returning home.
-         */
         supportFragmentManager.popBackStack(
             null,
             FragmentManager.POP_BACK_STACK_INCLUSIVE
@@ -92,10 +93,6 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    // =========================================================
-    // TRANSFER NAVIGATION
-    // =========================================================
-
     fun showTransferFragment() {
 
         supportFragmentManager
@@ -108,10 +105,6 @@ class MainActivity : AppCompatActivity() {
             .addToBackStack(null)
             .commit()
     }
-
-    // =========================================================
-    // HISTORY NAVIGATION
-    // =========================================================
 
     fun showHistoryFragment() {
 
@@ -126,19 +119,13 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    // =========================================================
-    // CONFIRMATION NAVIGATION
-    // =========================================================
-
     fun showConfirmationFragment(
         request: TransferRequest
     ) {
 
-        val confirmationFragment =
-            ConfirmationFragment()
+        val confirmationFragment = ConfirmationFragment()
 
         val bundle = Bundle().apply {
-
             putSerializable(
                 ConfirmationFragment.ARG_TRANSFER_REQUEST,
                 request
@@ -156,5 +143,29 @@ class MainActivity : AppCompatActivity() {
             )
             .addToBackStack(null)
             .commit()
+    }
+
+    fun signOutAndOpenLogin() {
+
+        // End the Firebase Authentication session.
+        firebaseAuth.signOut()
+
+        // Stop the existing session reminder service.
+        stopService(
+            Intent(this, SessionReminderService::class.java)
+        )
+
+        openLoginActivity()
+    }
+
+    private fun openLoginActivity() {
+
+        val intent = Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+
+        startActivity(intent)
+        finish()
     }
 }

@@ -1,7 +1,11 @@
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
+
+    // Firebase Google Services
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -22,11 +26,11 @@ android {
         // Existing XML screens
         dataBinding = true
 
-        // Lab 09 - Jetpack Compose
+        // Jetpack Compose
         compose = true
     }
 
-    // Compose compiler compatible with Kotlin 1.9.24
+    // Compatible with Kotlin 1.9.24
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"
     }
@@ -54,7 +58,7 @@ kotlin {
 dependencies {
 
     // ---------------------------------------------------------
-    // Core
+    // Core Android
     // ---------------------------------------------------------
 
     implementation("androidx.core:core-ktx:1.13.1")
@@ -62,15 +66,13 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.cardview:cardview:1.0.0")
-
-    // ---------------------------------------------------------
-    // Fragments
-    // ---------------------------------------------------------
-
     implementation("androidx.fragment:fragment-ktx:1.6.2")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
+    implementation("androidx.activity:activity-compose:1.9.0")
+
     // ---------------------------------------------------------
-    // Room
+    // Room - Keep until Firestore migration is complete
     // ---------------------------------------------------------
 
     implementation("androidx.room:room-runtime:2.6.1")
@@ -78,12 +80,10 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.1")
 
     // ---------------------------------------------------------
-    // Lifecycle
+    // Lifecycle / MVVM
     // ---------------------------------------------------------
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-
-    // Lab 09 - MVVM + Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
 
@@ -94,7 +94,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
     // ---------------------------------------------------------
-    // LifecycleService
+    // Session Reminder Service
     // ---------------------------------------------------------
 
     implementation("androidx.lifecycle:lifecycle-service:2.7.0")
@@ -106,7 +106,7 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
 
     // ---------------------------------------------------------
-    // Lab 09 - Jetpack Compose
+    // Jetpack Compose
     // ---------------------------------------------------------
 
     val composeBom = platform(
@@ -116,17 +116,26 @@ dependencies {
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
-    // Compose UI
     implementation("androidx.compose.ui:ui")
-
-    // Material 3
     implementation("androidx.compose.material3:material3")
-
-    // Preview
     implementation("androidx.compose.ui:ui-tooling-preview")
-
-    // Android Studio Compose tooling
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // ---------------------------------------------------------
+    // Lab 10 - Firebase
+    // ---------------------------------------------------------
+
+    val firebaseBom = platform(
+        "com.google.firebase:firebase-bom:33.7.0"
+    )
+
+    implementation(firebaseBom)
+
+    // Firebase Authentication
+    implementation("com.google.firebase:firebase-auth")
+
+    // Cloud Firestore
+    implementation("com.google.firebase:firebase-firestore")
 
     // ---------------------------------------------------------
     // Local Unit Testing
@@ -141,8 +150,6 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test:rules:1.7.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
-
-    // Espresso
     androidTestImplementation(
         "androidx.test.espresso:espresso-core:3.7.0"
     )

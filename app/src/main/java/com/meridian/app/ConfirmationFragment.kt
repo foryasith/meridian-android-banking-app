@@ -1,3 +1,4 @@
+
 package com.meridian.app
 
 import android.content.Context
@@ -22,12 +23,16 @@ class ConfirmationFragment : Fragment() {
 
     private lateinit var transferRequest: TransferRequest
 
+    private val firestoreRepository =
+        FirestoreTransferRepository()
+
+    private var isSubmitting = false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         return inflater.inflate(
             R.layout.fragment_confirmation,
             container,
@@ -41,92 +46,113 @@ class ConfirmationFragment : Fragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Get TransferRequest passed from TransferFragment
-        transferRequest =
-            BundleCompat.getSerializable(
-                requireArguments(),
-                ARG_TRANSFER_REQUEST,
-                TransferRequest::class.java
-            )!!
+        transferRequest = BundleCompat.getSerializable(
+            requireArguments(),
+            ARG_TRANSFER_REQUEST,
+            TransferRequest::class.java
+        )!!
 
-        // Format amount for display
         val formattedAmount = String.format(
             Locale.US,
             "LKR %,.2f",
             transferRequest.amount
         )
 
-        // Display recipient details
         view.findViewById<TextView>(
             R.id.tvConfirmRecipient
-        ).text =
-            "${transferRequest.recipientName} " +
-                    "(${transferRequest.recipientAccount})"
+        ).text = "${transferRequest.recipientName} " +
+                "(${transferRequest.recipientAccount})"
 
-        // Display amount
         view.findViewById<TextView>(
             R.id.tvConfirmAmount
         ).text = formattedAmount
 
-        // Display remarks
         view.findViewById<TextView>(
             R.id.tvConfirmRemarks
-        ).text =
-            transferRequest.remarks.ifEmpty {
-                "No remarks"
-            }
+        ).text = transferRequest.remarks.ifEmpty {
+            "No remarks"
+        }
 
-        // Edit transfer
-        view.findViewById<Button>(
+        val confirmButton = view.findViewById<Button>(
+            R.id.btnConfirm
+        )
+
+        val editButton = view.findViewById<Button>(
             R.id.btnEditTransfer
-        ).setOnClickListener {
+        )
 
+        editButton.setOnClickListener {
             requireActivity()
                 .supportFragmentManager
                 .popBackStack()
         }
 
-        // Confirm transfer
-        view.findViewById<Button>(
-            R.id.btnConfirm
-        ).setOnClickListener {
+        confirmButton.setOnClickListener {
 
-            lifecycleScope.launch {
+            if (isSubmitting) {
+                return@setOnClickListener
+            }
 
-                // 1. Save transfer into Room database
-                AppDatabase
-                    .getInstance(requireContext())
-                    .transferDao()
-                    .insert(transferRequest)
+            isSubmitting = true
+            confirmButton.isEnabled = false
+            editButton.isEnabled = false
 
-                // 2. Save last-used recipient using SharedPreferences
-                val prefs =
-                    requireContext().getSharedPreferences(
-                        "banking_app_prefs",
-                        Context.MODE_PRIVATE
+            viewLifecycleOwner.lifecycleScope.launch {
+
+                try {
+
+                    // 1. Save the demo transfer to Firestore.
+                    firestoreRepository.saveTransfer(
+                        transferRequest
                     )
 
-                prefs.edit()
-                    .putString(
-                        "last_recipient_account",
-                        transferRequest.recipientAccount
-                    )
-                    .putString(
-                        "last_recipient_name",
-                        transferRequest.recipientName
-                    )
-                    .apply()
+                    // 2. Preserve existing Room history.
+                    AppDatabase
+                        .getInstance(requireContext())
+                        .transferDao()
+                        .insert(transferRequest)
 
-                // 3. Show confirmation message
-                Toast.makeText(
-                    requireContext(),
-                    "Transfer submitted",
-                    Toast.LENGTH_LONG
-                ).show()
+                    // 3. Save last-used recipient.
+                    val prefs = requireContext()
+                        .getSharedPreferences(
+                            "banking_app_prefs",
+                            Context.MODE_PRIVATE
+                        )
 
-                // 4. Return to Dashboard
-                (requireActivity() as MainActivity)
-                    .showDashboardFragment()
+                    prefs.edit()
+                        .putString(
+                            "last_recipient_account",
+                            transferRequest.recipientAccount
+                        )
+                        .putString(
+                            "last_recipient_name",
+                            transferRequest.recipientName
+                        )
+                        .apply()
+
+                    // 4. Show success message.
+                    Toast.makeText(
+                        requireContext(),
+                        "Transfer record saved successfully",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    // 5. Return to Dashboard.
+                    (requireActivity() as MainActivity)
+                        .showDashboardFragment()
+
+                } catch (e: Exception) {
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Unable to save transfer: ${e.localizedMessage}",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    isSubmitting = false
+                    confirmButton.isEnabled = true
+                    editButton.isEnabled = true
+                }
             }
         }
     }
